@@ -3,7 +3,7 @@ services:
   nginx_base:
     build:
       context: .
-      dockerfile: Dockerfile.teste
+      dockerfile: Dockerfile.kaltura-media-openresty
 
   allinonenginx:
     extends:
