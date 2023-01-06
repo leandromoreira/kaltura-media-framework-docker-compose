@@ -11,14 +11,14 @@ services:
     volumes:
       - "./all_in_one_nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf"
     ports:
-      - "9090:9090"
-      - "8001:8001"
-      - "1935:1935"
-      - "7045:7045"
-      - "8002:8002"
-      - "8003:8003"
-      - "8004:8004"
-      - "8005:8005"
+      - "9090:9090" # External HTTP Server (packager)
+      - "8001:8001" # Internal http server
+      - "1935:1935" # RTMP
+      - "7045:7045" # Haivision SRT
+      - "8002:8002" # mpeg-ts
+      - "8003:8003" # Segmenter (kmp input)
+      - "8004:8004" # Closed caption decoder (kmp input)
+      - "8005:8005" # RTMP output (kmp input)
     depends_on:
       - controller
 

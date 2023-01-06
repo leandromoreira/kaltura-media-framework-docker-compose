@@ -35,6 +35,7 @@ vlc http://localhost:9090/clear/ch/ch2/master.m3u8
   * explore other options such as DRM.
 * refactor the golang code. :bomb:
   * use struct instead of `map[string]interface{}`, once the API format is known one can use the [json to struct](https://json2struct.mervine.net/) to aid this task.
+* template nginx.conf to set hosts by enviroment variable
 * try to do the `ffmpeg` origin simulator over docker instead of locally.
 * add more workflow examples such as: `srt input`, `mpegts`, and, etc.
 * add the infamous big buck bunny file in loop? `ffmpeg -stream_loop -1 -re -i bbb.mp4`.
