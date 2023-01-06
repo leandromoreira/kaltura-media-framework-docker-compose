@@ -17,3 +17,10 @@ ffmpeg -stream_loop -1 -re -i a.mp4 -c copy -f flv "rtmp://localhost:1935/live/c
 curl http://localhost:9090/clear/ch/ch1/master.m3u8
 # somehow it only have worked after I curl the url on my local terminal?! (it might be a browser related thing)
 ```
+
+```
+# to test a multi-bitrate streaming run
+./ffmpeg-multi-bitrate-example.sh
+# and then open (after a little while) in any player
+vlc http://localhost:9090/clear/ch/ch2/master.m3u8
+```
