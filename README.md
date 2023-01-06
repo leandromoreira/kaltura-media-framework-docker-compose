@@ -15,4 +15,5 @@ ffmpeg -stream_loop -1 -re -i a.mp4 -c copy -f flv "rtmp://localhost:1935/live/c
 
 # fetching live streaming from the packager or open it in any hls capable player
 curl http://localhost:9090/clear/ch/ch1/master.m3u8
+# somehow it only have worked after I curl the url on my local terminal?! (it might be a browser related thing)
 ```
