@@ -72,25 +72,58 @@ func publish(map_request_payload map[string]interface{}) map[string]interface{} 
 	}
 
 	// return the publish response
-	return map[string]interface{}{
+	publish_payload := map[string]interface{}{
 		"channel_id": channel_id,
 		"track_id":   track_id,
 		"upstreams":  upstreams,
 	}
+	msg := fmt.Sprintf("trying to publish the payload %+v\n", publish_payload)
+	log(msg)
+	return publish_payload
 }
 
 func postMulti(url string, requests []map[string]interface{}) {
+	msg := fmt.Sprintf("[[EXTERNAL POST]] url=%+v\n", url)
+	log(msg)
+
 	retries := 3
 	for i := 0; i < retries; i++ {
-		j, _ := json.Marshal(requests)
-		r, err := http.NewRequest("POST", url+"/multi", bytes.NewBuffer(j))
+
+		//var res map[string]interface{}
+		//json.NewDecoder(resp.Body).Decode(&res)
+		//fmt.Println(res["json"])
+
+		j, err := json.Marshal(requests)
 		if err != nil {
+			msg := fmt.Sprintf("[[EXTERNAL POST]] error while marshalling try #%+v url=%+v err=%+v\n", i+1, url, err)
+			log(msg)
+			time.Sleep(4 * time.Second)
 			continue
 		}
-		defer r.Body.Close()
-		var map_request_payload map[string]interface{}
-		body, err := ioutil.ReadAll(r.Body)
-		if err := json.Unmarshal(body, &map_request_payload); err != nil {
+		resp, err := http.Post(url+"/multi", "application/json", bytes.NewBuffer(j))
+		if err != nil {
+			msg := fmt.Sprintf("[[EXTERNAL POST]] error while posting try #%+v url=%+v err=%+v json=%+v\n", i+1, url, err, string(j[:]))
+			log(msg)
+			time.Sleep(4 * time.Second)
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			msg := fmt.Sprintf("[[EXTERNAL POST]] FAIL STATUS CODE %+v try #%+v url=%+v err=%+v body=%+v\n", resp.Status, i+1, url, err, resp.Body)
+			log(msg)
+			time.Sleep(4 * time.Second)
+			continue
+		}
+
+		msg := fmt.Sprintf("[[EXTERNAL POST]] SUCCESS POST try #%+v url=%+v response=%+v requests=%+v\n", i+1, url, resp, requests)
+		log(msg)
+		var map_request_payload interface{}
+		err = json.NewDecoder(resp.Body).Decode(&map_request_payload)
+		if err != nil {
+			msg := fmt.Sprintf("[[EXTERNAL POST]] error while unmarshalling try #%+v url=%+v err=%+v body=%+v\n", i+1, url, err, resp.Body)
+			log(msg)
+			time.Sleep(4 * time.Second)
 			continue
 		}
 
@@ -194,22 +227,29 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 				"code":    "ok",
 				"message": "",
 			})
+
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(j)
 		case "republish":
-			msg := fmt.Sprintf("[[%+v]]\n", event_type)
-			log(msg)
 			upstream_id := GetStringFromMap(map_request_payload, "id")
-			w.Header().Set("Content-Type", "application/json")
+
+			msg := fmt.Sprintf("[[%+v]] upstream_id %+v\n", event_type, upstream_id)
+			log(msg)
 
 			switch upstream_id {
 			case "cc":
 				j, _ := json.Marshal(getCCDecodeUpstream())
+				msg := fmt.Sprintf("[[%+v]] upstream_id %+v j %+v \n", event_type, upstream_id, j)
+				log(msg)
+				w.Header().Set("Content-Type", "application/json")
 				w.Write(j)
 			default:
 				j, _ := json.Marshal(map[string]interface{}{
 					"url": os.Getenv("SEGMENTER_KMP_URL"),
 				})
+				//msg := fmt.Sprintf("[[%+v]] upstream_id %+v j %+v \n", event_type, upstream_id, string(j[:]))
+				//log(msg)
+				w.Header().Set("Content-Type", "application/json")
 				w.Write(j)
 			}
 		case "publish":

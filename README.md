@@ -2,11 +2,15 @@
 
 ```
 # running all the services
-docker-compose run --rm --service-ports all_in_one_nginx
+docker-compose up
+
+# in case you know what's happening individualy
+# docker-compose logs -f controller
+# docker-compose logs -f allinonenginx
 
 # simulating an live feed
 ffmpeg -re -i a.mp4 -c copy -f flv "rtmp://localhost:1935/live/ch1_s1"
 
-# fetching the packaged live streaming formats
-curl -v localhost/clear/ch/ch1/master.m3u8
+# fetching live streaming from the packager
+curl http://localhost:9090/clear/ch/ch1/master.m3u8
 ```
