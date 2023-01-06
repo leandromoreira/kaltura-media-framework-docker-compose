@@ -9,13 +9,13 @@ A docker image (and a docker-compose) for the passthrough for [Kaltura Live Medi
 docker-compose stop && docker-compose down && docker-compose build && docker-compose up
 ```
 
-## Simulating an live feed
+## Simulating a multi-bitrate live stream feed
 
 ```
 ./ffmpeg-multi-bitrate-example.sh
 ```
 
-## Playing the stream
+## Playing the live stream
 ```
 vlc http://localhost:9090/clear/ch/ch2/master.m3u8
 # or you can open the url in your hls/dash player
