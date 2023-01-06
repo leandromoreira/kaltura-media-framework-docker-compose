@@ -178,14 +178,15 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 		}
 		map_request_payload := map_request_payload_raw.(map[string]interface{})
 
+		fmt.Printf("Method %+v Payload %+v\n", r.Method, map_request_payload)
+
 		event_type := MapS(map_request_payload, "event_type")
 		if event_type == "" {
 			http.Error(w, "event_type is required", http.StatusBadRequest)
 		}
 		switch event_type {
-		case "connect":
+		case "connect", "unpublish":
 			log.Println("kalmedia_controller -> connect")
-		case "unpublish":
 			log.Println("kalmedia_controller -> unpublish")
 			j, _ := json.Marshal(Map{
 				"code":    "ok",
