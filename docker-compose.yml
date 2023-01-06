@@ -28,6 +28,6 @@ services:
     ports:
       - "80:80"
     environment:
-      - CC_DECODER_URL=kmp://all_in_one_nginx:8004
-      - SEGMENTER_KMP_URL=kmp://all_in_one_nginx:8003
+      - CC_DECODER_URL=kmp://127.0.0.1:8004
+      - SEGMENTER_KMP_URL=kmp://127.0.0.1:8003
       - SEGMENTER_API_URL=http://all_in_one_nginx:8001/api/live
