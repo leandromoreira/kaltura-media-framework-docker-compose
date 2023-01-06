@@ -19,6 +19,10 @@ func GetStringFromMap(m map[string]interface{}, k string) string {
 	return m[k].(string)
 }
 
+func GetFloat64FromMap(m map[string]interface{}, k string) float64 {
+	return m[k].(float64)
+}
+
 func GetMapFromMap(m map[string]interface{}, k string) map[string]interface{} {
 	return m[k].(map[string]interface{})
 }
@@ -83,26 +87,18 @@ func publish(map_request_payload map[string]interface{}) map[string]interface{} 
 }
 
 func postMulti(url string, requests []map[string]interface{}) {
-	msg := fmt.Sprintf("[[EXTERNAL POST]] url=%+v\n", url)
-	log(msg)
-
 	retries := 3
 	for i := 0; i < retries; i++ {
-
-		//var res map[string]interface{}
-		//json.NewDecoder(resp.Body).Decode(&res)
-		//fmt.Println(res["json"])
-
 		j, err := json.Marshal(requests)
 		if err != nil {
-			msg := fmt.Sprintf("[[EXTERNAL POST]] error while marshalling try #%+v url=%+v err=%+v\n", i+1, url, err)
+			msg := fmt.Sprintf("[[EXTERNAL POST]] <<ERROR>> while marshalling try #%+v url=%+v err=%+v\n", i+1, url, err)
 			log(msg)
 			time.Sleep(4 * time.Second)
 			continue
 		}
 		resp, err := http.Post(url+"/multi", "application/json", bytes.NewBuffer(j))
 		if err != nil {
-			msg := fmt.Sprintf("[[EXTERNAL POST]] error while posting try #%+v url=%+v err=%+v json=%+v\n", i+1, url, err, string(j[:]))
+			msg := fmt.Sprintf("[[EXTERNAL POST]] <<ERROR>> while posting try #%+v url=%+v err=%+v json=%+v\n", i+1, url, err, string(j[:]))
 			log(msg)
 			time.Sleep(4 * time.Second)
 			continue
@@ -110,24 +106,43 @@ func postMulti(url string, requests []map[string]interface{}) {
 		defer resp.Body.Close()
 
 		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			msg := fmt.Sprintf("[[EXTERNAL POST]] FAIL STATUS CODE %+v try #%+v url=%+v err=%+v body=%+v\n", resp.Status, i+1, url, err, resp.Body)
+			msg := fmt.Sprintf("[[EXTERNAL POST]] <<FAIL STATUS CODE>> %+v try #%+v url=%+v err=%+v body=%+v\n", resp.Status, i+1, url, err, resp.Body)
 			log(msg)
 			time.Sleep(4 * time.Second)
 			continue
 		}
 
-		msg := fmt.Sprintf("[[EXTERNAL POST]] SUCCESS POST try #%+v url=%+v response=%+v requests=%+v\n", i+1, url, resp, requests)
-		log(msg)
-		var map_request_payload interface{}
-		err = json.NewDecoder(resp.Body).Decode(&map_request_payload)
+		var map_request_payload_raw interface{}
+		err = json.NewDecoder(resp.Body).Decode(&map_request_payload_raw)
+
 		if err != nil {
-			msg := fmt.Sprintf("[[EXTERNAL POST]] error while unmarshalling try #%+v url=%+v err=%+v body=%+v\n", i+1, url, err, resp.Body)
+			msg := fmt.Sprintf("[[EXTERNAL POST]] <<ERROR>> while unmarshalling try #%+v url=%+v err=%+v body=%+v\n", i+1, url, err, resp.Body)
 			log(msg)
 			time.Sleep(4 * time.Second)
 			continue
 		}
+		failed := false
+		//response_payload := map_request_payload.()[map[code:403] map[code:404]]
+		//  interface conversion: interface {} is []interface {}, not []map[string]interface {}
+		//map_request_payload := map_request_payload_raw.([]map[string]interface{})
+		map_request_payload := map_request_payload_raw.([]interface{})
+		for _, response_map := range map_request_payload {
+			response_map_typed := response_map.(map[string]interface{})
+			response_code := GetFloat64FromMap(response_map_typed, "code")
+			if response_code < 200 || response_code > 299 {
+				msg := fmt.Sprintf("[[EXTERNAL POST]] <<FAIL STATUS CODE>> %+v try #%+v url=%+v body=%+v request=%+v\n", response_code, i+1, url, resp.Body, requests)
+				log(msg)
+				failed = true
+				time.Sleep(4 * time.Second)
+				continue
+			}
 
-		i = 3
+		}
+		if !failed {
+			msg := fmt.Sprintf("[[EXTERNAL POST]] <<SUCCESS POST>> try #%+v url=%+v response=%+v requests=%+v\n", i+1, url, resp, requests)
+			log(msg)
+			i = 3
+		}
 	}
 }
 
@@ -141,7 +156,7 @@ func segmenterChannelCreate(channel_id string, preset string) {
 			"body":   map[string]interface{}{"id": channel_id, "preset": preset, "initial_segment_index": time.Now().Unix()},
 		},
 		map[string]interface{}{
-			"uri":    "/channels/$channelId/timelines",
+			"uri":    "/channels/" + channel_id + "/timelines",
 			"method": "POST",
 			"body":   map[string]interface{}{"id": "main", "active": true, "max_segments": 20, "max_manifest_segments": 10},
 		},
@@ -152,15 +167,15 @@ func segmenterChannelCreate(channel_id string, preset string) {
 func setupSegmenterTrack(channel_id string, variant_id string, track_id string, media_type string) {
 	segmenter_api_url := os.Getenv("SEGMENTER_API_URL")
 	postMulti(segmenter_api_url, []map[string]interface{}{
-		segmenterVariantCreate(channel_id, variant_id, []string{}, "", "", ""),
+		segmenterVariantCreate(channel_id, variant_id, []string{}, nil, nil, nil),
 		segmenterTrackCreate(channel_id, track_id, media_type),
 		segmenterVariantAddTrack(channel_id, variant_id, track_id),
 	})
 
 }
-func segmenterVariantCreate(channel_id string, variant_id string, track_ids []string, role string, label string, lang string) map[string]interface{} {
+func segmenterVariantCreate(channel_id string, variant_id string, track_ids []string, role *string, label *string, lang *string) map[string]interface{} {
 	return map[string]interface{}{
-		"uri":    "/channels/$channelId/variants",
+		"uri":    "/channels/" + channel_id + "/variants",
 		"method": "POST",
 		"body": map[string]interface{}{
 			"id":        variant_id,
@@ -174,7 +189,7 @@ func segmenterVariantCreate(channel_id string, variant_id string, track_ids []st
 
 func segmenterTrackCreate(channel_id string, track_id string, media_type string) map[string]interface{} {
 	return map[string]interface{}{
-		"uri":    "/channels/$channelId/tracks",
+		"uri":    "/channels/" + channel_id + "/tracks",
 		"method": "POST",
 		"body": map[string]interface{}{
 			"id":         track_id,
@@ -184,14 +199,14 @@ func segmenterTrackCreate(channel_id string, track_id string, media_type string)
 }
 func segmenterVariantAddTrack(channel_id string, variant_id string, track_id string) map[string]interface{} {
 	return map[string]interface{}{
-		"uri":    "/channels/$channelId/variants/$variantId/tracks",
+		"uri":    "/channels/" + channel_id + "/variants/" + variant_id + "/tracks",
 		"method": "POST",
 		"body":   map[string]interface{}{"id": track_id},
 	}
 }
 
 func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
-	msg := fmt.Sprintf("[[START]] controller request (%+v) %+v\n", r.Method, r)
+	msg := fmt.Sprintf("[[START]] controller request (%+v) %+v\n", r.Method, r.Body)
 	log(msg)
 
 	switch r.Method {
@@ -247,8 +262,6 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 				j, _ := json.Marshal(map[string]interface{}{
 					"url": os.Getenv("SEGMENTER_KMP_URL"),
 				})
-				//msg := fmt.Sprintf("[[%+v]] upstream_id %+v j %+v \n", event_type, upstream_id, string(j[:]))
-				//log(msg)
 				w.Header().Set("Content-Type", "application/json")
 				w.Write(j)
 			}
