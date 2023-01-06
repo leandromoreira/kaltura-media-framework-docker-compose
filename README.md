@@ -9,7 +9,8 @@ docker-compose stop && docker-compose down && docker-compose build && docker-com
 # docker-compose logs -f allinonenginx
 
 # simulating an live feed
-# download a.mp4 video if you don't have it already wget http://cdnapi.kaltura.com/p/2035982/playManifest/entryId/0_w4l3m87h/flavorId/0_vsu1xutk/format/download/a.mp4
+# download a.mp4 video if you don't have it already
+# wget http://cdnapi.kaltura.com/p/2035982/playManifest/entryId/0_w4l3m87h/flavorId/0_vsu1xutk/format/download/a.mp4
 ffmpeg -stream_loop -1 -re -i a.mp4 -c copy -f flv "rtmp://localhost:1935/live/ch1_s1"
 
 # fetching live streaming from the packager or open it in any hls capable player
