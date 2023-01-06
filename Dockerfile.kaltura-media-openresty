@@ -1,3 +1,4 @@
+# vi:syntax=dockerfile
 ARG RESTY_IMAGE_BASE="ubuntu"
 ARG RESTY_IMAGE_TAG="20.04"
 
