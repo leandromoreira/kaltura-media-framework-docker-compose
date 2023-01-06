@@ -19,6 +19,10 @@ docker-compose stop && docker-compose down && docker-compose build && docker-com
 ```
 vlc http://localhost:9090/clear/ch/ch2/master.m3u8
 # or you can open the url in your hls/dash player
+
+# HLS AES-128 http://localhost:9090/aes128/ch/ch2/master.m3u8
+# HLS SAMPLE-AES http://localhost:9090/cbcs/ch/ch2/master.m3u8
+# DASH http://localhost:9090/clear/ch/ch2/manifest.mpd
 ```
 
 ## TODO
