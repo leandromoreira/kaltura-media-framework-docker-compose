@@ -22,6 +22,14 @@ func (m Map) S(s string) string {
 	return m[s].(string)
 }
 
+func MapS(m map[string]interface{}, k string) string {
+	return m[k].(string)
+}
+
+func MapM(m map[string]interface{}, k string) map[string]interface{} {
+	return m[k].(map[string]interface{})
+}
+
 func getCCDecodeUpstream() Map {
 	return Map{
 		"id":          "cc-vid",
@@ -151,10 +159,10 @@ func segmenterVariantAddTrack(channel_id string, variant_id string, track_id str
 }
 
 func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("start controller request %+v\n", r)
+	fmt.Printf("start controller request %+v  %+v\n", r, r.URL.Query())
 
 	switch r.Method {
-	case "GET":
+	case "GET", "POST":
 		var map_request_payload_raw interface{}
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -168,9 +176,9 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "error unmarshaling the request body", http.StatusBadRequest)
 			return
 		}
-		map_request_payload := map_request_payload_raw.(Map)
+		map_request_payload := map_request_payload_raw.(map[string]interface{})
 
-		event_type := map_request_payload.S("event_type")
+		event_type := MapS(map_request_payload, "event_type")
 		if event_type == "" {
 			http.Error(w, "event_type is required", http.StatusBadRequest)
 		}
@@ -178,20 +186,18 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 		case "connect":
 			log.Println("kalmedia_controller -> connect")
 		case "unpublish":
+			log.Println("kalmedia_controller -> unpublish")
 			j, _ := json.Marshal(Map{
 				"code":    "ok",
 				"message": "",
 			})
+			w.Header().Set("Content-Type", "application/json")
 			w.Write(j)
 		case "republish":
-			upstream_id, ok := map_request_payload["id"]
-			if !ok {
-				http.Error(w, "id is required for [republish]", http.StatusBadRequest)
-			}
-			//channel_id, ok := map_request_payload["id"]
-			//if !ok {
-			//	http.Error(w, "channel_id is required for [republish]", http.StatusBadRequest)
-			//}
+			log.Println("kalmedia_controller -> republish")
+			upstream_id := MapS(map_request_payload, "id")
+			w.Header().Set("Content-Type", "application/json")
+
 			switch upstream_id {
 			case "cc":
 				j, _ := json.Marshal(getCCDecodeUpstream())
@@ -203,16 +209,15 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 				w.Write(j)
 			}
 		case "publish":
+			log.Println("kalmedia_controller -> publish")
 			j, _ := json.Marshal(publish(Map{
 				"url": os.Getenv("SEGMENTER_KMP_URL"),
 			}))
+			w.Header().Set("Content-Type", "application/json")
 			w.Write(j)
 		default:
 			http.Error(w, "event_type=["+event_type+"] is invalid", http.StatusBadRequest)
 		}
-
-	case "POST":
-		fmt.Printf("unexpected POST %+v\n", r)
 	default:
 		fmt.Printf("unexpected verb %+v\n", r)
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -221,7 +226,7 @@ func kalmedia_controller(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/controller", kalmedia_controller)
+	http.HandleFunc("/control", kalmedia_controller)
 
 	log.Println("Starting kalmedia_controller!")
 	http.ListenAndServe(":80", nil)
