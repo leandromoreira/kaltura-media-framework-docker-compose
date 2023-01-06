@@ -1,26 +1,19 @@
 # kaltura-media-framework-docker-compose
 
+## Running all the services
+
 ```
-# running all the services
 docker-compose stop && docker-compose down && docker-compose build && docker-compose up
-
-# in case you know what's happening individualy
-# docker-compose logs -f controller
-# docker-compose logs -f allinonenginx
-
-# simulating an live feed
-# download a.mp4 video if you don't have it already
-# wget http://cdnapi.kaltura.com/p/2035982/playManifest/entryId/0_w4l3m87h/flavorId/0_vsu1xutk/format/download/a.mp4
-ffmpeg -stream_loop -1 -re -i a.mp4 -c copy -f flv "rtmp://localhost:1935/live/ch1_s1"
-
-# fetching live streaming from the packager or open it in any hls capable player
-curl http://localhost:9090/clear/ch/ch1/master.m3u8
-# somehow it only have worked after I curl the url on my local terminal?! (it might be a browser related thing)
 ```
 
+## Simulating an live feed
+
 ```
-# to test a multi-bitrate streaming run
 ./ffmpeg-multi-bitrate-example.sh
-# and then open (after a little while) in any player
+```
+
+## Playing the stream
+```
 vlc http://localhost:9090/clear/ch/ch2/master.m3u8
+# or you can open the url in your hls/dash player
 ```

@@ -10,7 +10,18 @@ ARG RESTY_VERSION="1.21.4.1"
 ARG RESTY_LUAROCKS_VERSION="3.9.0"
 ARG RESTY_J="1"
 ARG NGINX_EXTRA_MODULES_ROOT_PATH="/src"
-ARG NGINX_KALMEDIA="media-framework"
+
+# github project dependencies
+ARG KALTURA_MEDIA_FRAMEWORK="media-framework"
+ARG HAIVISION_SRT="srt"
+ARG KALTURA_NGINX_SRT="nginx-srt-module"
+ARG KALTURA_NGINX_STREAM_PREREAD_SRT="nginx-stream-preread-str-module"
+# github project dependencies commit version
+ARG NGINX_KALMEDIA_SHA="db8f899fc0a28a8f749b0d999e4670a6eb54f47c"
+ARG HAIVISION_SRT_SHA="b3a21e10689b2b69093b48fd2adb3ccffa125a14"
+ARG KALTURA_NGINX_SRT_SHA="8270651d73ab70a3db4f0f1c6254df2bb8fd529f"
+ARG KALTURA_NGINX_STREAM_PREREAD_SRT_SHA="7326626fce5d6ec31ac892377e0a734e503d40e6"
+
 ARG RESTY_CONFIG_OPTIONS="\
     --with-compat \
     --with-file-aio \
@@ -20,17 +31,17 @@ ARG RESTY_CONFIG_OPTIONS="\
     --with-stream \
     --with-threads \
     --with-http_dav_module                                \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-common            \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-kmp-in-module     \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-kmp-out-module    \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-rtmp-module       \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-rtmp-kmp-module   \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-mpegts-module     \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-mpegts-kmp-module \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-kmp-cc-module     \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-kmp-rtmp-module   \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-live-module       \
-    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$NGINX_KALMEDIA/nginx-pckg-module       \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-common            \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-kmp-in-module     \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-kmp-out-module    \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-rtmp-module       \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-rtmp-kmp-module   \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-mpegts-module     \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-mpegts-kmp-module \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-kmp-cc-module     \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-kmp-rtmp-module   \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-live-module       \
+    --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/$KALTURA_MEDIA_FRAMEWORK/nginx-pckg-module       \
     --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/nginx-srt-module                        \
     --add-module=$NGINX_EXTRA_MODULES_ROOT_PATH/nginx-stream-preread-str-module         \
     "
@@ -39,18 +50,6 @@ ARG RESTY_CONFIG_OPTIONS="\
 ARG RESTY_CONFIG_OPTIONS_MORE=" --with-cc-opt='-I/usr/local/include' \
     --with-ld-opt='-L/usr/local/lib -Wl,-rpath,/usr/local/lib' \
     "
-#    /usr/local/include/srt
-#/usr/local/include/srt/srt.h
-#/usr/local/bin/srt-tunnel
-#/usr/local/bin/srt-live-transmit
-#/usr/local/bin/srt-ffplay
-#/usr/local/bin/srt-file-transmit
-#/usr/local/lib/libsrt.a
-#/usr/local/lib/libsrt.so.1.5
-#/usr/local/lib/pkgconfig/srt.pc
-#/usr/local/lib/pkgconfig/haisrt.pc
-#/usr/local/lib/libsrt.so
-#/usr/local/lib/libsrt.so.1.5.2
 ARG RESTY_LUAJIT_OPTIONS="--with-luajit-xcflags='-DLUAJIT_NUMMODE=2 -DLUAJIT_ENABLE_LUA52COMPAT'"
 
 ARG RESTY_ADD_PACKAGE_BUILDDEPS=""
@@ -81,8 +80,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 		curl \
                 tclsh \
                 cmake \
-                php-fpm \
-                php-curl \
 		libpcre3 \
 		libpcre3-dev \
 		openssl \
@@ -91,24 +88,28 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 		zlib1g-dev \
 		unzip \
                 wget \
+                ffmpeg \
+                git \
                 software-properties-common \
 		${RESTY_ADD_PACKAGE_BUILDDEPS} \
 		${RESTY_ADD_PACKAGE_RUNDEPS} \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& cd /tmp \
 	&& if [ -n "${RESTY_EVAL_PRE_CONFIGURE}" ]; then eval $(echo ${RESTY_EVAL_PRE_CONFIGURE}); fi
-# ffmpeg
-RUN apt-get update && \
-  apt-get install -y --no-install-recommends ffmpeg git
 
 WORKDIR  ${NGINX_EXTRA_MODULES_ROOT_PATH}
 # get all dependencies
-RUN git clone https://github.com/kaltura/${NGINX_KALMEDIA} && \
-    git clone https://github.com/Haivision/srt && \
-    git clone https://github.com/kaltura/nginx-srt-module && \
-    git clone https://github.com/kaltura/nginx-stream-preread-str-module
+RUN git clone https://github.com/kaltura/${KALTURA_MEDIA_FRAMEWORK} && \
+      cd ${KALTURA_MEDIA_FRAMEWORK} && git checkout ${NGINX_KALMEDIA_SHA}
+RUN git clone https://github.com/Haivision/${HAIVISION_SRT} && \
+      cd ${HAIVISION_SRT} && git checkout ${HAIVISION_SRT_SHA}
+RUN git clone https://github.com/kaltura/${KALTURA_NGINX_SRT} && \
+      cd ${KALTURA_NGINX_SRT} && git checkout ${KALTURA_NGINX_SRT_SHA}
+RUN git clone https://github.com/kaltura/${KALTURA_NGINX_STREAM_PREREAD_SRT} && \
+      cd ${KALTURA_NGINX_STREAM_PREREAD_SRT} && git checkout ${KALTURA_NGINX_STREAM_PREREAD_SRT_SHA}
+
 # build libsrt
-RUN cd srt && \
+RUN cd ${HAIVISION_SRT} && \
     ./configure && \
     make && \
     make install
