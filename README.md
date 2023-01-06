@@ -13,9 +13,11 @@ docker-compose stop && docker-compose down && docker-compose build && docker-com
 
 ```
 ./ffmpeg-multi-bitrate-example.sh
+# to test the low latency stream use ./ffmpeg-lowlatency-multi-bitrate-example.sh
 ```
 
 ## Playing the live stream
+
 ```
 vlc http://localhost:9090/clear/ch/ch2/master.m3u8
 # or you can open the url in your hls/dash player
@@ -23,6 +25,8 @@ vlc http://localhost:9090/clear/ch/ch2/master.m3u8
 # HLS AES-128 http://localhost:9090/aes128/ch/ch2/master.m3u8
 # HLS SAMPLE-AES http://localhost:9090/cbcs/ch/ch2/master.m3u8
 # DASH http://localhost:9090/clear/ch/ch2/manifest.mpd
+
+# to test the low latency stream use vlc http://localhost:9090/clear/ch/ch3/master.m3u8
 ```
 
 ## TODO
@@ -32,6 +36,6 @@ vlc http://localhost:9090/clear/ch/ch2/master.m3u8
 * refactor the golang code. :bomb:
   * use struct instead of `map[string]interface{}`, once the API format is known one can use the [json to struct](https://json2struct.mervine.net/) to aid this task.
 * try to do the `ffmpeg` origin simulator over docker instead of locally.
-* add more workflow examples such as: `srt input`, `mpegts`, and, etc. 
+* add more workflow examples such as: `srt input`, `mpegts`, and, etc.
 * add the infamous big buck bunny file in loop? `ffmpeg -stream_loop -1 -re -i bbb.mp4`.
 * maybe create a `docker-compose` in which each server has its own process.
