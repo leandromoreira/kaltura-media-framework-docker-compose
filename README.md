@@ -6,14 +6,14 @@ A docker image (and a docker-compose) for the [Kaltura Live Media Framework](htt
 ## Running all the services
 
 ```
-docker-compose stop && docker-compose down && docker-compose build && docker-compose up
+make run
 ```
 
 ## Simulating a multi-bitrate live stream feed
 
 ```
-./ffmpeg-multi-bitrate-example.sh
-# to test the low latency stream use ./ffmpeg-lowlatency-multi-bitrate-example.sh
+make origin
+# to test the low latency stream use make lowlatency_origin
 ```
 
 ## Playing the live stream

@@ -43,10 +43,10 @@ rtmp {
             live on;
             deny play all;
 
-            kmp_ctrl_connect_url http://controller/control;
-            kmp_ctrl_publish_url http://controller/control;
-            kmp_ctrl_unpublish_url http://controller/control;
-            kmp_ctrl_republish_url http://controller/control;
+            kmp_ctrl_connect_url ${CONTROLLER_API_URL};
+            kmp_ctrl_publish_url ${CONTROLLER_API_URL};
+            kmp_ctrl_unpublish_url ${CONTROLLER_API_URL};
+            kmp_ctrl_republish_url ${CONTROLLER_API_URL};
         }
     }
 }
@@ -73,10 +73,10 @@ stream {
         ts_stream_id $preread_str;
 
         ts_kmp on;
-        ts_kmp_ctrl_connect_url http://controller/control;
-        ts_kmp_ctrl_publish_url http://controller/control;
-        ts_kmp_ctrl_unpublish_url http://controller/control;
-        ts_kmp_ctrl_republish_url http://controller/control;
+        ts_kmp_ctrl_connect_url ${CONTROLLER_API_URL};
+        ts_kmp_ctrl_publish_url ${CONTROLLER_API_URL};
+        ts_kmp_ctrl_unpublish_url ${CONTROLLER_API_URL};
+        ts_kmp_ctrl_republish_url ${CONTROLLER_API_URL};
     }
 
     # segmenter (kmp input)
@@ -93,7 +93,7 @@ stream {
         resolver 127.0.0.11 ipv6=off;
 
         kmp_cc;
-        kmp_cc_out_ctrl_publish_url http://controller/control;
+        kmp_cc_out_ctrl_publish_url ${CONTROLLER_API_URL};
     }
 
     # rtmp output (kmp input)
@@ -184,10 +184,10 @@ http {
             ts_stream_id $arg_streamid;
 
             ts_kmp on;
-            ts_kmp_ctrl_connect_url http://controller/control;
-            ts_kmp_ctrl_publish_url http://controller/control;
-            ts_kmp_ctrl_unpublish_url http://controller/control;
-            ts_kmp_ctrl_republish_url http://controller/control;
+            ts_kmp_ctrl_connect_url ${CONTROLLER_API_URL};
+            ts_kmp_ctrl_publish_url ${CONTROLLER_API_URL};
+            ts_kmp_ctrl_unpublish_url ${CONTROLLER_API_URL};
+            ts_kmp_ctrl_republish_url ${CONTROLLER_API_URL};
         }
     }
 

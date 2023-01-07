@@ -9,7 +9,11 @@ services:
     extends:
       service: nginx_base
     volumes:
-      - "./all_in_one_nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf"
+      - "./all_in_one_nginx.conf.template:/usr/local/openresty/nginx/conf/nginx.conf.template"
+      - "./docker-entrypoint.sh:/scripts/docker-entrypoint.sh"
+    command: /bin/bash -c "/scripts/docker-entrypoint.sh"
+    environment:
+      - CONTROLLER_API_URL=http://controller:9191/control
     ports:
       - "9090:9090" # External HTTP Server (packager)
       - "8001:8001" # Internal http server
@@ -27,8 +31,9 @@ services:
       context: .
       dockerfile: Dockerfile.controller
     ports:
-      - "80:80"
+      - "9191:9191"
     environment:
+      - CONTROLLER_PORT=9191
       - CC_DECODER_URL=kmp://127.0.0.1:8004
       - SEGMENTER_KMP_URL=kmp://127.0.0.1:8003
       - SEGMENTER_API_URL=http://allinonenginx:8001/api/live

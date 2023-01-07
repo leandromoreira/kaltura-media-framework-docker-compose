@@ -289,5 +289,11 @@ func main() {
 
 	msg := fmt.Sprintf("[[STARTING]] kalmedia_controller server \n")
 	log(msg)
-	http.ListenAndServe(":80", nil)
+
+	controller_port := "9191"
+	if cp := os.Getenv("CONTROLLER_PORT"); cp != "" {
+		controller_port = cp
+	}
+
+	http.ListenAndServe(":"+controller_port, nil)
 }
