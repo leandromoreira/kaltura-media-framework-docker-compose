@@ -1,0 +1,17 @@
+# vi:syntax=dockerfile
+FROM golang:1.19
+
+WORKDIR /usr/src/app
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
+COPY cmd ./
+COPY web ./
+COPY handlers ./
+
+RUN go build -v -o app ./...
+
+CMD ["app"]

@@ -37,3 +37,15 @@ services:
       - CC_DECODER_URL=kmp://127.0.0.1:8004
       - SEGMENTER_KMP_URL=kmp://127.0.0.1:8003
       - SEGMENTER_API_URL=http://allinonenginx:8001/api/live
+
+  newcontroller:
+    build:
+      context: .
+      dockerfile: Dockerfile.new-controller
+    ports:
+      - "9191:9191"
+    environment:
+      - CONTROLLER_PORT=9191
+      - CC_DECODER_URL=kmp://127.0.0.1:8004
+      - SEGMENTER_KMP_URL=kmp://127.0.0.1:8003
+      - SEGMENTER_API_URL=http://allinonenginx:8001/api/live
