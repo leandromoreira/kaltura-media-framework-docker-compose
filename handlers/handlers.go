@@ -7,5 +7,6 @@ import (
 type Handler func(c *gin.Context)
 
 var All = map[string]Handler{
-	"connect": Connect,
+	"connect":   Connect,
+	"unpublish": Connect,
 }
