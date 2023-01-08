@@ -11,4 +11,8 @@ test:
 	docker-compose run --rm newcontrollertest
 
 local_test:
-	SEGMENTER_KMP_URL=segmenter_kmp_url go test ./...
+	CC_DECODER_URL=http://cc_decoder_url \
+		       SEGMENTER_API_URL=http://segmenter_api_url \
+		       SEGMENTER_KMP_URL=http://segmenter_kmp_url \
+		       go test ./...
+

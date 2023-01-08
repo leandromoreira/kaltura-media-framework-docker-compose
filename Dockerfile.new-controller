@@ -6,11 +6,13 @@ WORKDIR /usr/src/app
 COPY go.mod ./
 COPY go.sum ./
 
-RUN go mod download
-
 COPY cmd ./cmd
 COPY web ./web
 COPY handlers ./handlers
+
+RUN go mod download
+RUN go mod tidy
+
 
 RUN go build -v -o app ./cmd/controller/main.go
 CMD ["./app"]

@@ -36,7 +36,9 @@ func Setup() *gin.Engine {
 			c.JSON(http.StatusBadRequest, gin.H{"code": "UNKNOWN_EVENT_TYPE", "message": "Unknown event type"})
 			return
 		}
-		handlers.All[requestMessage.EventType](requestMessage, c)
+		response_code, payload := handlers.All[requestMessage.EventType](requestMessage, c)
+		c.JSON(response_code, payload)
+
 	})
 
 	r.NoRoute(func(c *gin.Context) {
