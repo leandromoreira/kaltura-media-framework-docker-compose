@@ -6,3 +6,6 @@ origin:
 
 lowlatency_origin:
 	./ffmpeg-lowlatency-multi-bitrate-example.sh
+
+test:
+	docker-compose run --rm newcontrollertest

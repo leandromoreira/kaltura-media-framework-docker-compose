@@ -8,10 +8,9 @@ COPY go.sum ./
 
 RUN go mod download
 
-COPY cmd ./
-COPY web ./
-COPY handlers ./
+COPY cmd ./cmd
+COPY web ./web
+COPY handlers ./handlers
 
-RUN go build -v -o app ./...
-
-CMD ["app"]
+RUN go build -v -o app ./cmd/controller/main.go
+CMD ["./app"]

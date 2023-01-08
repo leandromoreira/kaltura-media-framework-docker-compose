@@ -49,3 +49,10 @@ services:
       - CC_DECODER_URL=kmp://127.0.0.1:8004
       - SEGMENTER_KMP_URL=kmp://127.0.0.1:8003
       - SEGMENTER_API_URL=http://allinonenginx:8001/api/live
+
+  newcontrollertest:
+    image: golang:1.19
+    working_dir: "/src"
+    volumes:
+      - "./:/src"
+    command: /bin/bash -c "go test ./..."
