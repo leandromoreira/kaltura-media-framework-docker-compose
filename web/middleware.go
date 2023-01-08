@@ -16,8 +16,8 @@ func RequestLoggerMiddleware() gin.HandlerFunc {
 		body, _ := ioutil.ReadAll(tee)
 		c.Request.Body = ioutil.NopCloser(&buf)
 		log.Println("<<<<<<<<<< RequestLoggerMiddleware [START] >>>>>>>>>>")
-		log.Println(string(body))
-		log.Println(c.Request.Header)
+		log.Printf("Path=%+v Header=%+v\n Query=%+v\n", c.Request.URL.Path, c.Request.Header, c.Request.URL.Query())
+		log.Printf("Body=%+v\n", string(body))
 		log.Println("<<<<<<<<<< RequestLoggerMiddleware [ END ] >>>>>>>>>>")
 		c.Next()
 	}

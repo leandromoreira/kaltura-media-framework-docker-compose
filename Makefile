@@ -9,3 +9,6 @@ lowlatency_origin:
 
 test:
 	docker-compose run --rm newcontrollertest
+
+local_test:
+	SEGMENTER_KMP_URL=segmenter_kmp_url go test ./...

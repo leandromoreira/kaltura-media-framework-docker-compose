@@ -56,3 +56,8 @@ services:
     volumes:
       - "./:/src"
     command: /bin/bash -c "go test ./..."
+    environment:
+      - CONTROLLER_PORT=9191
+      - CC_DECODER_URL=cc_decoder_url
+      - SEGMENTER_KMP_URL=segmenter_kmp_url
+      - SEGMENTER_API_URL=segmenter_api_url

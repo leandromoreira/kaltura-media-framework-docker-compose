@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Connect(c *gin.Context) {
+func Connect(_ RequestMessage, c *gin.Context) {
 	success := ResponseMessage{Code: "ok", Message: "success"}
 	c.JSON(http.StatusOK, success)
 }
