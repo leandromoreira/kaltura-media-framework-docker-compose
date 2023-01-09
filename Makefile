@@ -1,5 +1,5 @@
 run:
-	docker-compose stop && docker-compose down && docker-compose build && docker-compose up
+	docker-compose stop && docker-compose down && docker-compose build && docker-compose up allinonenginx
 
 origin:
 	./ffmpeg-multi-bitrate-example.sh
@@ -8,7 +8,7 @@ lowlatency_origin:
 	./ffmpeg-lowlatency-multi-bitrate-example.sh
 
 test:
-	docker-compose run --rm newcontrollertest
+	docker-compose run --rm controllertest
 
 local_test:
 	CC_DECODER_URL=http://cc_decoder_url \

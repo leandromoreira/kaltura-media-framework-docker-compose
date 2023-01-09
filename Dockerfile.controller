@@ -1,12 +1,10 @@
 # vi:syntax=dockerfile
 FROM golang:1.19
 
-WORKDIR /usr/src/app
+ENV SRC_DIR=/src/app
+ADD . $SRC_DIR
 
-COPY go.mod ./
-RUN go mod download && go mod verify
+WORKDIR $SRC_DIR
 
-COPY main.go .
-RUN go build -v -o /usr/local/bin/app ./...
-
-CMD ["app"]
+RUN go build -v -o app ./cmd/controller/main.go
+CMD ["./app"]
